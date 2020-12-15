@@ -1,0 +1,7 @@
+vault-sa.json
+tfstate-sa.json
+
+.terraform
+*.tfstate*
+*.tfvars*
+

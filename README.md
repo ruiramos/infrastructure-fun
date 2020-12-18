@@ -62,6 +62,9 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
 
-## Deploying out first service
+## Deploying our first service
 
-I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster.
+I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster. A few goals I have for now with this repo structure are:
+ - Automatically build new Docker images for the services when their source code changes
+ - (After getting [ArgoCD](https://argoproj.github.io/argo-cd/) configured) Automatically deploy new versions of the services to the cluster
+

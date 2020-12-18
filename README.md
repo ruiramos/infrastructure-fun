@@ -7,7 +7,7 @@
 Documented in [this README](./local-vault/README.md).
 
 
-2. Use the Vault roleset we created above as an access token provider for the Google Terraform provider that we'll use to provision the Kubernetes cluster. This is in `main.tf`.
+2. Use the Vault roleset we created above as an access token provider for the Google Terraform provider that we'll use to provision the Kubernetes cluster. This is in [main.tf](./main.tf).
 
 
 3. Next, configure the terraform backend to use Google Cloud Storage (gcs).
@@ -48,7 +48,7 @@ gcloud container clusters get-credentials $(terraform output kubernetes_cluster_
 Not sure if there was a Vault-y way of doing this.
 
 
-4. Deployed Kubernetes Dashboard, created admin account:
+4. Deployed [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/), created admin account:
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 kubectl apply -f kubernetes-admin/kubernetes-dashboard-admin.rbac.yaml
@@ -59,7 +59,7 @@ This allows us to generate an authorization token with:
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep service-controller-token | awk '{print $1}')
 ```
 
-The Kubernetes Dashboard should be running [here](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
+The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
 
 ## Deploying out first service

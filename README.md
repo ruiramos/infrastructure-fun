@@ -6,17 +6,22 @@
 
 Documented in [this README](./local-vault/README.md).
 
-2. Next, configure the terraform backend to use Google Cloud Storage (gcs).
+
+2. Use the Vault roleset we created above as an access token provider for the Google Terraform provider that we'll use to provision the Kubernetes cluster. This is in `main.tf`.
+
+
+3. Next, configure the terraform backend to use Google Cloud Storage (gcs).
 
 Ideally, we want our terraform state to live remotely, so in the future multiple users can update the terraform state and it doesn't depend on a local state. A Google Storage bucket was created for that purpose. The configuration that instructs terraform to use the bucket is on the `terraform { }` block.
 
 Unfortunately I hit a road block here as I couldn't use the same authentication method - access token from Vault - that I used on the Google provider so I had to create a separate service account (with super limited access - can only access that bucket) and use it here. (`credentials` key).
 I believe this limitation is [documented here](https://github.com/hashicorp/terraform/issues/13022).
 
-In order to limit the Service Account to access the bucket, the role of Storage Admin was limited by a rule that looked like this:
+In order to limit the Service Account to access the bucket, the role of `Storage Admin` was limited by a rule that looked like this:
 ```
 resource.name.startsWith("projects/_/buckets/tf-state-cluster-test")
 ```
+
 
 ## Creating resources on GCP
 
@@ -57,4 +62,6 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 The Kubernetes Dashboard should be running [here](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
 
-## Deploying rust-echo-service
+## Deploying out first service
+
+I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster.

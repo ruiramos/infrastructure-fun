@@ -1,7 +1,6 @@
-# rust-echo-service
+# data-storage-service
 
-This is a very simple echo service written in Rust, using [Tide](https://github.com/http-rs/tide).
-It replies back whatever you post to its `/echo` endpoint.
+This is an encrypted data storage service. It allows a user to POST some data to it and get a URL ad a password back (as json). Making a POST request to the provided URL with the password as body will give access to the decrypted data.
 
 It listens on the port provided by the `PORT` env var, or 8088.
 

@@ -29,7 +29,7 @@ jobs:
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
         with:
-          images: services/data-storage
+          images: docker-repository/data-storage
           tag-sha: true # add git short SHA as Docker tag
       -
         name: Set up QEMU

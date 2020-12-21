@@ -61,10 +61,19 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 
 The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
+## Setting up Google Artifact Registry
+
+We'll be using Google Artifact Registry to host our containerized images of the services we'll be building next. To set up GAR, I created [a new .tf file](./google_artifact_registry.tf) that contains definitions for the repository and the service account we'll use on our CI/CD pipeline to push built images into. At this point, I needed to add a few extra roles to the terraform/Vault service account, so we can create and manage service account, keys and IAM roles.
+
+When applying this `google_artifact_registry.tf` for the first time, a private key for the SA will be created and output on the terminal. I used this as a secret on Github so we can authenticate when using Github Actions.
+
 
 ## Deploying our first service
 
 I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster. A few goals I have for now with this repo structure are:
  - Automatically build new Docker images for the services when their source code changes
  - (After getting [ArgoCD](https://argoproj.github.io/argo-cd/) configured) Automatically deploy new versions of the services to the cluster
+
+We'll be using Github Actions for simplicity, so the workflow definition for the first service, `data-storage-service`, can be [found here](./.github/workflows/build-data-storage-service.yml).
+
 

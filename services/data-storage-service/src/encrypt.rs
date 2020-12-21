@@ -1,4 +1,4 @@
-use magic_crypt::{MagicCryptError, MagicCryptTrait};
+use magic_crypt::MagicCryptTrait;
 use rand::Rng;
 
 pub fn encrypt_data(data: String) -> (String, String, String) {

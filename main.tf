@@ -13,6 +13,13 @@ provider "google" {
   zone        = var.zone
 }
 
+provider "google-beta" {
+  access_token = data.vault_generic_secret.gcp_auth.data.token
+  project     = var.project_id
+  region      = var.region
+  zone        = var.zone
+}
+
 terraform {
   backend "gcs" {
     credentials = "tfstate-sa.json"

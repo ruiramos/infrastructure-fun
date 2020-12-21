@@ -49,8 +49,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          push: false
-          outputs: type=image,name=europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
+          outputs: type=registry,name=europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
           context: ./services/data-storage-service
           file: ./services/data-storage-service/Dockerfile
           tags: |

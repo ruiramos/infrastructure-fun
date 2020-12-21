@@ -37,7 +37,7 @@ async fn store_data(mut req: Request<State>) -> tide::Result {
     let data = req.body_string().await?;
     let state: &State = req.state();
 
-    if data.len() == 0 {
+    if data.is_empty() {
         return Err(tide::Error::from_str(tide::http::StatusCode::BadRequest, "Missing data on POST body"));
     }
 

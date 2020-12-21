@@ -3,7 +3,7 @@ name: Build data-storage-service
 on:
   push:
     branches: 
-      - master
+      - main
     files:
       - data-storage-service/src/**
       - .github/workflows/build-data-storage-service.yaml

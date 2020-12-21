@@ -18,7 +18,7 @@ RUN mkdir -p ./src/ && \
 RUN cargo fetch
 
 RUN cargo build --release && \
-    rm -rf ./target/release/.fingerprint/data-storage-service-*
+    rm -rf ./target/release/.fingerprint/data_storage_service-*
 
 # Setup debian release environment
 FROM debian:buster-slim AS release-context
@@ -41,12 +41,12 @@ RUN cargo clippy --release -- -D warnings && \
 # Create the release
 FROM release-context AS release
 
-COPY --from=build /usr/src/data-storage-service/target/release/data-storage-service /
+COPY --from=build /usr/src/data-storage-service/target/release/data_storage_service /
 
-RUN chown -R svc /data-storage-service
+RUN chown -R svc /data_storage_service
 
 USER svc
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["/data-storage-service"]
+CMD ["/data_storage_service"]

@@ -1,15 +1,10 @@
-#[macro_use]
-extern crate magic_crypt;
-
 use std::env;
 use tide::Request;
 use tide::convert::json;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-mod encrypt;
-
-use crate::encrypt::{encrypt_data, decrypt_data};
+use data_storage_service::encrypt::{encrypt_data, decrypt_data};
 
 #[derive(Clone, Default, Debug)]
 struct State {

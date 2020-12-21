@@ -3,7 +3,7 @@ FROM rust:1.48 AS build-context
 
 RUN rustup component add rustfmt clippy
 
-WORKDIR /usr/src/rust-echo-service
+WORKDIR /usr/src/data-storage-service
 
 COPY Cargo.toml .
 COPY Cargo.lock .
@@ -18,7 +18,7 @@ RUN mkdir -p ./src/ && \
 RUN cargo fetch
 
 RUN cargo build --release && \
-    rm -rf ./target/release/.fingerprint/rust-echo-service-*
+    rm -rf ./target/release/.fingerprint/data-storage-service-*
 
 # Setup debian release environment
 FROM debian:buster-slim AS release-context
@@ -41,12 +41,12 @@ RUN cargo clippy --release -- -D warnings && \
 # Create the release
 FROM release-context AS release
 
-COPY --from=build /usr/src/rust-echo-service/target/release/rust-echo-service /
+COPY --from=build /usr/src/data-storage-service/target/release/data-storage-service /
 
-RUN chown -R svc /rust-echo-service
+RUN chown -R svc /data-storage-service
 
 USER svc
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["/rust-echo-service"]
+CMD ["/data-storage-service"]

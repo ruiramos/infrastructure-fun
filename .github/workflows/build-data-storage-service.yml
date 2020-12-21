@@ -2,7 +2,7 @@ name: Build data-storage-service
 
 on:
   push:
-    branches: 
+    branches:
       - main
     files:
       - data-storage-service/src/**
@@ -49,15 +49,21 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          outputs: type=registry,name=europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
+          push: false
           context: ./services/data-storage-service
           file: ./services/data-storage-service/Dockerfile
           tags: |
             ${{ steps.docker_meta.outputs.tags }}
-            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{ steps.docker_meta.outputs.tags[0]}}
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{ steps.docker_meta.outputs.tags[1]}}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+      -
+        name: Actually push
+        run: |
+          docker push europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{ steps.docker_meta.outputs.tags[0]}}
+          docker push europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{ steps.docker_meta.outputs.tags[1]}}
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

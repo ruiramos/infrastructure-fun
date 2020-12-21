@@ -5,7 +5,7 @@ pub fn encrypt_data(data: String) -> (String, String, String) {
     let key = generate_password(16);
     let mc = new_magic_crypt!(&key, 256);
     let encrypted = encrypt_to_base64(&data, mc);
-    let hash = generate_hash(8);
+    let hash = generate_hash(32);
     (hash, key, encrypted)
 }
 

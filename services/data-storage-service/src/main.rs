@@ -47,6 +47,7 @@ async fn store_data(mut req: Request<State>) -> tide::Result {
     map.insert(hash.clone(), encrypted);
 
     let prefix_url = env::var("SERVICE_URL").unwrap_or_else(|_| "http://localhost:8088/".to_string());
+
     Ok(json!({"url": format!("{}{}", prefix_url, hash), "password": password}).into())
 }
 

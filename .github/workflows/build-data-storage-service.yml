@@ -20,7 +20,7 @@ jobs:
         name: Get short SHA and brach name
         id: slug
         run: |
-          echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+          echo "::set-output name=sha8::$(echo $GITHUB_SHA | cut -c1-8)"
           echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
       -
         name: Cache Docker layers

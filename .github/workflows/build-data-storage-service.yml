@@ -17,6 +17,12 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
       -
+        name: Get short SHA and brach name
+        id: slug
+        run: |
+          echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+          echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+      -
         name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -47,13 +53,11 @@ jobs:
           context: ./services/data-storage-service
           file: ./services/data-storage-service/Dockerfile
           tags: |
-            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:main
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${steps.slug.output.branch}
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${steps.slug.output.sha8}
+
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-      -
-        name: Actually push
-        run: |
-          docker push europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:main
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

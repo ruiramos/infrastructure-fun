@@ -57,7 +57,7 @@ jobs:
             europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:sha-${{steps.slug.outputs.sha8}}
 
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

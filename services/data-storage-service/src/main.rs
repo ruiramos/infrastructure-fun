@@ -27,7 +27,7 @@ async fn main() -> tide::Result<()> {
     app.at("/").post(store_data);
     app.at("/:id").post(get_data);
 
-    println!("-> Starting the server running on port {}", port);
+    println!("Starting the server running on port {}", port);
 
     app.listen(format!("0.0.0.0:{}", port)).await?;
     Ok(())

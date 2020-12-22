@@ -53,8 +53,8 @@ jobs:
           context: ./services/data-storage-service
           file: ./services/data-storage-service/Dockerfile
           tags: |
-            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{steps.slug.output.branch}}
-            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{steps.slug.output.sha8}}
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{steps.slug.outputs.branch}}
+            europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:${{steps.slug.outputs.sha8}}
 
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache

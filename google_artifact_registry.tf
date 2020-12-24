@@ -24,6 +24,6 @@ resource "google_service_account_key" "github_key" {
   service_account_id = google_service_account.gar_writer_sa.name
 }
 
-output "sa_key" {
-  value = google_service_account_key.github_key.private_key
-}
+#output "sa_key" {
+#  value = google_service_account_key.github_key.private_key
+#}

@@ -61,19 +61,62 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 
 The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
-## Setting up Google Artifact Registry
-
-We'll be using Google Artifact Registry to host our containerized images of the services we'll be building next. To set up GAR, I created [a new .tf file](./google_artifact_registry.tf) that contains definitions for the repository and the service account we'll use on our CI/CD pipeline to push built images into. At this point, I needed to add a few extra roles to the terraform/Vault service account, so we can create and manage service account, keys and IAM roles.
-
-When applying this `google_artifact_registry.tf` for the first time, a private key for the SA will be created and output on the terminal. I used this as a secret on Github so we can authenticate when using Github Actions.
-
 
 ## Deploying our first service
 
 I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster. A few goals I have for now with this repo structure are:
- - Automatically build new Docker images for the services when their source code changes
- - (After getting [ArgoCD](https://argoproj.github.io/argo-cd/) configured) Automatically deploy new versions of the services to the cluster
+ - Automatically build new Docker images for the services when their source code changes (pushed to Google Artifact Registry, more about this below)
+ - (After getting [ArgoCD](https://argoproj.github.io/argo-cd/) configured) Automatically deploy new versions of the services to the cluster when the kubernetes deployment files change
 
-We'll be using Github Actions for simplicity, so the workflow definition for the first service, `data-storage-service`, can be [found here](./.github/workflows/build-data-storage-service.yml).
+The first service we're going to deploy is called [data-storage-service](./services/data-storage-service) and it's written in Rust. (more info on the [service's README](./services/data-storage-service/README.md)).
+As stated there, we're using a multistage build so that we keep the final images smaller and we are able to make the most of Docker Layer Caching by caching the compiled dependencies, if they don't change, instead of doing it in every single build.
+
+
+### Setting up Google Artifact Registry
+
+We'll be using [Google Artifact Registry](https://cloud.google.com/artifact-registry) to host our containerized images of the services, it's an evolution of the old Google Container Registry and it supports both Docker images and a bunch of languages packages as well (npm, etc). 
+
+To set up GAR, I created [a new .tf file](./google_artifact_registry.tf) that contains definitions for the repository and the service account we'll use on our CI/CD pipeline to push built images into. At this point, I needed to add a few extra roles to the terraform/Vault service account, so we can create and manage service account, keys and IAM roles. When applying this `google_artifact_registry.tf` for the first time, a private key for the SA will be created and output on the terminal. I used this as a secret on Github so we can authenticate when using Github Actions.
+
+
+### Setting up Github Actions
+
+The workflow definition for the first service, `data-storage-service`, can be [found here](./.github/workflows/build-data-storage-service.yml).
+
+We're using Docker's [build and push action](https://github.com/docker/build-push-action) that uses buildx / [Moby BuildKit](https://github.com/moby/buildkit) behind the scenes to build the images. I didn't know about this at all but from what I could gather it brings some improvements on caching, build parellelization and cross-platform builds. Since we're already using multi-stage builds on this first service's Dockerfile, it should make sense to use it. Another difference vs `docker build` is that buildx supports tagging and pushing the image straight away, but [for now](https://github.com/docker/build-push-action/issues/100) you need to use the `docker-compose` backend, which you can do by including [this setup action](https://github.com/docker/setup-buildx-action).
+
+One last thing that took me a while to get right was setting the cache mode to `max` (on the action's `cache-to` parameter). This makes docker cache every layer of every image built - in our case build and release. The default setting only keeps layers of the final image and so we were not caching the projects dependencies, which reduced the build times almost by half.
+
+
+### Kubernetes Resource Configs and Kustomize
+
+We'll be using [Kustomize](https://kustomize.io/) to be able to easily create several versions of our Kubernete Resource Configurations (Deployments, Services, etc).
+Although Kustomize has been added to `kubectl` already, [the version included on the CLI is out of date](https://github.com/kubernetes-sigs/kustomize#kubectl-integration) so I would recommend installing Kustomize seperately and not using the `kubectl apply -k` syntax for now.
+
+We're using the standard [overlay file structure](https://github.com/kubernetes-sigs/kustomize#2-create-variants-using-overlays) so we can have customizations for different environments in the future, eg dev vs production, and all the yamls can be found on the service's kubernetes/ directory (eg for [data-storage-service](./services/data-storage-service/kubernetes/)). 
+
+We created a service and deployment for `data-storage-service` that pulls the image from GAR and runs a bunch of replicas. That made me realise I had asked for a very strict set of oauth scopes initially on the Kubernetes nodes configuration, and I had to extend it so Kubernetes was authorized to pull the images from GAR. More about the [available scopes here](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create#--scopes).
+
+To apply the dev configuration we run, from the service directory:
+```
+kustomize build kubernetes/overlays/dev | kubectl apply -f -
+```
+
+This just created our first deployment and service on the new GKE cluster! 🎉
+We can test that it's working by port-forwarding, for instance, the service:
+```
+k port-forward service/dev-data-storage-service 8888:80
+```
+
+And then use the service:
+```
+➜  infra git:(main) ✗ curl -d 'some secret' localhost:8888
+{"password":"wwdhN)lugP!h0BvF","url":"https://dont-know-yet/K6nR7sd6gHTY8wz5FcGSEDauFW6nSUXa"}% 
+```
+
+Great stuff.
+
+
+## Setting up an Ingress controller with a static IP address
 
 

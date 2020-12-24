@@ -16,5 +16,5 @@ On `build-context`, we use some clever tricks to preserve as many of the layers 
 
 ## Actions
 
-There's a GH Actions workflow that builds and pushes the new image to the Google artifact registry (GAR) if it detects any changes to the `src/` files in this projects directory (that might have also been slightly adapted from MHRA).
+There's a Github Actions workflow that builds and pushes the new image to the Google artifact registry (GAR) if it detects any changes to the `src/` files in this projects directory (that might have also been slightly adapted from MHRA).
 

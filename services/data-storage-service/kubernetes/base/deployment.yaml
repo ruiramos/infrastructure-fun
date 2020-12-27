@@ -15,7 +15,7 @@ spec:
         app: data-storage
     spec:
       containers:
-      - name: app
+      - name: data-storage-app
         image: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:main
         env:
           - name: PORT

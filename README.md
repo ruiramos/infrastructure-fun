@@ -114,7 +114,20 @@ And then use the service:
 {"password":"wwdhN)lugP!h0BvF","url":"https://dont-know-yet/K6nR7sd6gHTY8wz5FcGSEDauFW6nSUXa"}% 
 ```
 
-Great stuff.
+This service will look more useful later on! :)
+
+
+## Setting up ArgoCD for Continuous Deployment
+
+[ArgoCD](https://argoproj.github.io/argo-cd/) is a continuous delivery tool for Kubernetes that syncs your Kubernetes Resource Config files (or Kustomize templates) with the state of the cluster. This is called GitOps!
+
+We can install is by running:
+```
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+
 
 
 ## Setting up an Ingress controller with a static IP address

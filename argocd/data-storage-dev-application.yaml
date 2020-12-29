@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: data-storage-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ruiramos/infrastructure-fun.git
+    targetRevision: HEAD
+    path: services/data-storage-service/kubernetes/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default

@@ -1,4 +1,4 @@
 resources:
 - ../../base
-namespace: prod
+namespace: production
 

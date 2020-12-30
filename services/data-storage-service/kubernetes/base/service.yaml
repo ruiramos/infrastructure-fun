@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: data-storage-service
 spec:
+  type: NodePort
   selector:
     app: data-storage
   ports:

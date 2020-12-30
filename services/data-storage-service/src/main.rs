@@ -26,6 +26,7 @@ async fn main() -> tide::Result<()> {
 
     app.at("/").post(store_data);
     app.at("/:id").post(get_data);
+    app.at("/healthz").get(say_ok);
 
     println!("* Starting the server running on port {}", port);
 
@@ -71,3 +72,6 @@ async fn get_data(mut req: Request<State>) -> tide::Result {
     }
 }
 
+async fn say_ok(mut _req: Request<State>) -> tide::Result {
+    Ok("ok".into())
+}

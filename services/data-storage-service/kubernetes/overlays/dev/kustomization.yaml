@@ -3,5 +3,5 @@ resources:
 namePrefix: dev-
 images:
 - name: data-storage-app
-  newTag: sha-ccc9960a
+  newTag: sha-515db1c3
 

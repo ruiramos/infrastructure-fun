@@ -28,3 +28,7 @@ spec:
           httpGet:
             path: /healthz
             port: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080

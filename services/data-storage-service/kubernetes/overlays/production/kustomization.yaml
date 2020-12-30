@@ -1,4 +1,7 @@
 resources:
 - ../../base
 namespace: production
-
+images:
+- name: data-storage
+  newName: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
+  newTag: sha-515db1c3

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: data-storage-app
-        image: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
+        image: data-storage
         env:
           - name: PORT
             value: "8080"

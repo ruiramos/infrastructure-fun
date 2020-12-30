@@ -2,6 +2,7 @@ resources:
 - ../../base
 namePrefix: dev-
 images:
-- name: data-storage-app
+- name: data-storage
+  newName: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage:main
   newTag: sha-515db1c3
 

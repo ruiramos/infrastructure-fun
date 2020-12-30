@@ -127,8 +127,11 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
+We'll create two manifests for two seperate Applications - the dev and production versions of the `data-storage-service`. They live [on the argocd/ directory](./argocd). Applying this to the cluster will create the 2 apps on ArgoCD, which will then poll our Github repository for changes on the apps manifests/kustomize files.
 
+### Using a GitHub webhook
 
+TODO - this would improve deployment times as ArgoCD would be notifiied of the change on the  manifest.
 
 ## Setting up an Ingress controller with a static IP address
 

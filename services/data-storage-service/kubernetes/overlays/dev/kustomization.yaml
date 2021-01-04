@@ -1,6 +1,6 @@
 resources:
 - ../../base
-- ../../mapping
+- ./mapping
 namePrefix: dev-
 images:
 - name: data-storage

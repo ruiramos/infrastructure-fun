@@ -4,6 +4,7 @@ metadata:
   name: basic-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "global-cluster-ip"
+    networking.gke.io/managed-certificates: gke.ruiramos.com
 spec:
   backend:
     serviceName: ambassador

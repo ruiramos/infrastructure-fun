@@ -1,0 +1,9 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: dev-data-storage
+  namespace: default
+spec:
+  prefix: /
+  service: dev-data-storage-service:8080
+

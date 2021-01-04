@@ -77,3 +77,9 @@ output "kubernetes_cluster_name" {
   value       = google_container_cluster.primary.name
   description = "GKE Cluster Name"
 }
+
+resource "google_compute_global_address" "global-cluster-ip" {
+  name = "global-cluster-ip"
+  description = "Static external IP address for the cluster Load Balancer"
+}
+

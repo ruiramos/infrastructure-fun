@@ -133,6 +133,13 @@ We'll create two manifests for two seperate Applications - the dev and productio
 
 TODO - this would improve deployment times as ArgoCD would be notifiied of the change on the  manifest.
 
-## Setting up an Ingress controller with a static IP address
+
+## Exposing our cluster to the world
+
+In this section, we'll allow outside traffic to the cluster by adding an Ingress controller with a static IP address, with a Google Managed SSL certificate so all traffic is HTTPS. We're going to be using [Ambassador](https://github.com/datawire/ambassador), a Kubernetes native API gateway based on the [Envoy proxy](https://www.envoyproxy.io/), because it seems it can do a lot for us besides load balancing, seems nicer to use and configure, and for my own educational purposes.
+
+### Setting up an Ingress controller with a static IP address
+
+At this point, we've created a new section on the Terraform GKE cluster definition file ([gke.tf](./gke.tf)) to provision a Google static IP address called `global-cluster-ip`.
 
 

@@ -1,6 +1,6 @@
 resources:
 - ../../base
-- ./mapping
+- ./mapping.yaml
 namePrefix: dev-
 images:
 - name: data-storage

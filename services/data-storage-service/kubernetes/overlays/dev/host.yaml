@@ -1,0 +1,10 @@
+apiVersion: getambassador.io/v2
+kind: Host
+metadata:
+  name: data-storage-service-host
+spec:
+  hostname: keep.gke.ruiramos.com
+  requestPolicy:
+    insecure:
+      action: Redirect
+

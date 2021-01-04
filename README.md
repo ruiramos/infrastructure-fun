@@ -95,7 +95,7 @@ Although Kustomize has been added to `kubectl` already, [the version included on
 
 We're using the standard [overlay file structure](https://github.com/kubernetes-sigs/kustomize#2-create-variants-using-overlays) so we can have customizations for different environments in the future, eg dev vs production, and all the yamls can be found on the service's kubernetes/ directory (eg for [data-storage-service](./services/data-storage-service/kubernetes/)). 
 
-We created a service and deployment for `data-storage-service` that pulls the image from GAR and runs a bunch of replicas. That made me realise I had asked for a very strict set of oauth scopes initially on the Kubernetes nodes configuration, and I had to extend it so Kubernetes was authorized to pull the images from GAR. More about the [available scopes here](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create#--scopes).
+We created a service and deployment for `data-storage-service` that pulls the image from GAR and runs a bunch of replicas. That made me realise I had asked for a very strict set of oauth scopes initially on the [Kubernetes nodes configuration](./gke.tf#L52), and I had to extend it so Kubernetes was authorized to pull the images from GAR. More about the [available scopes here](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create#--scopes).
 
 To apply the dev configuration we run, from the service directory:
 ```
@@ -138,11 +138,11 @@ In this section, we'll allow outside traffic to the cluster by adding an Ingress
 
 ### Setting up an Ingress controller with a static IP address
 
-At this point, we've created a new section on the [Terraform GKE cluster definition file](./gke.tf) to provision a Google static IP address called `global-cluster-ip`. This will be used as an annotation on the Ingress controller (L7 HTTP(S) load balancer we'll create next).
+At this point, we created a new section on the [Terraform GKE cluster definition file](./gke.tf) to provision a Google static IP address called `global-cluster-ip`. This will be used as an annotation on the Ingress controller - the L7 HTTP(S) load balancer we'll create next.
 
 ### Installing Ambassador on the cluster
 
-We've followed [this guide](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/) to get Ambassador running on the cluster. Start by applying the configuration files (we've downloaded the base ones and extended with some additional config that will be useful in a second):
+We followed [this guide](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/) to get Ambassador running on the GKE cluster. Start by applying the configuration files (we downloaded the base ones and extended with some additional config that will be useful in a second):
 
 ```
 k apply -f kubernetes/ambassador/ambassador-crds.yaml
@@ -158,12 +158,12 @@ k apply -f kubernetes/certificate.yaml
 k apply -f kubernetes/basic-ingress.yaml
 ```
 
-This is all quite simple stuff, as you can see the ingress uses the `ambassador` service, using the static IP address and certificates we've created just now. There's a few limiting things with these managed certificates like the fact that you can't use wildcards, so for now we have to specify each domain/sub-domain we'll be using in the certificate Kubernetes resource definition.
+This is all quite simple stuff, as you can see the [ingress](./kubernetes/basic-ingress.yaml) uses the `ambassador` service, using the static IP address and certificates we've created just now. There's a few limiting things with these managed certificates like the fact that you can't use wildcards, so for now we have to specify each domain/sub-domain we'll be using in the certificate Kubernetes resource definition.
 
 There are a bunch of annoying things to do here related with the `ambassador`'s health checks [documented here](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/#5-configure-ambassador-to-do-http---https-redirection) - we need to point the Ingress backend health check to use the `ambassador-admin` `NodePort`, as the `ambassador` will return a 301 to everything it doesn't think it's HTTPS.
 
 ### Route traffic to the deployed service
 
-At this stage, I created the Host and Mapping configurations in the service Kubernetes dev overlay ([here](./services/data-storage-service/kubernetes/overlays/dev)) that tell Ambassador to route traffic to the service based on Host and make HTTP requests redirect to HTTPS.
+At this stage, I created the [Host](./services/data-storage-service/kubernetes/overlays/dev/host.yaml) and [Mapping](./services/data-storage-service/kubernetes/overlays/dev/mapping.yaml) configurations in the service Kubernetes dev overlay that tell Ambassador to route traffic to the service based on Host and make HTTP requests redirect to HTTPS.
 
 The service is now available on `https://keep.gke.ruiramos.com`!

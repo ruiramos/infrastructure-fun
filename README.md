@@ -114,8 +114,6 @@ And then use the service:
 {"password":"wwdhN)lugP!h0BvF","url":"https://dont-know-yet/K6nR7sd6gHTY8wz5FcGSEDauFW6nSUXa"}% 
 ```
 
-This service will look more useful later on! :)
-
 
 ## Setting up ArgoCD for Continuous Deployment
 
@@ -131,7 +129,7 @@ We'll create two manifests for two seperate Applications - the dev and productio
 
 ### Using a GitHub webhook
 
-TODO - this would improve deployment times as ArgoCD would be notifiied of the change on the  manifest.
+TODO - this would improve deployment times as ArgoCD would be notified of changes on the manifest files.
 
 
 ## Exposing our cluster to the world
@@ -140,6 +138,32 @@ In this section, we'll allow outside traffic to the cluster by adding an Ingress
 
 ### Setting up an Ingress controller with a static IP address
 
-At this point, we've created a new section on the Terraform GKE cluster definition file ([gke.tf](./gke.tf)) to provision a Google static IP address called `global-cluster-ip`.
+At this point, we've created a new section on the [Terraform GKE cluster definition file](./gke.tf) to provision a Google static IP address called `global-cluster-ip`. This will be used as an annotation on the Ingress controller (L7 HTTP(S) load balancer we'll create next).
 
+### Installing Ambassador on the cluster
 
+We've followed [this guide](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/) to get Ambassador running on the cluster. Start by applying the configuration files (we've downloaded the base ones and extended with some additional config that will be useful in a second):
+
+```
+k apply -f kubernetes/ambassador/ambassador-crds.yaml
+k apply -f kubernetes/ambassador/
+```
+
+Now we have Ambassador running and exposed with a `NodePort` service. This will be the service used by the Ingress controller we'll create next to forward traffic to, after terminating TLS.
+
+### Create a Google Managed Certificate and the Ingress controller
+
+```
+k apply -f kubernetes/certificate.yaml
+k apply -f kubernetes/basic-ingress.yaml
+```
+
+This is all quite simple stuff, as you can see the ingress uses the `ambassador` service, using the static IP address and certificates we've created just now. There's a few limiting things with these managed certificates like the fact that you can't use wildcards, so for now we have to specify each domain/sub-domain we'll be using in the certificate Kubernetes resource definition.
+
+There are a bunch of annoying things to do here related with the `ambassador`'s health checks [documented here](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/#5-configure-ambassador-to-do-http---https-redirection) - we need to point the Ingress backend health check to use the `ambassador-admin` `NodePort`, as the `ambassador` will return a 301 to everything it doesn't think it's HTTPS.
+
+### Route traffic to the deployed service
+
+At this stage, I created the Host and Mapping configurations in the service Kubernetes dev overlay ([here](./services/data-storage-service/kubernetes/overlays/dev)) that tell Ambassador to route traffic to the service based on Host and make HTTP requests redirect to HTTPS.
+
+The service is now available on `https://keep.gke.ruiramos.com`!

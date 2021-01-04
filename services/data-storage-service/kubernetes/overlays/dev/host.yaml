@@ -6,5 +6,5 @@ spec:
   hostname: keep.gke.ruiramos.com
   requestPolicy:
     insecure:
-      action: Redirect
+      action: Redirect # This enables the HTTP to HTTPS redirect
 

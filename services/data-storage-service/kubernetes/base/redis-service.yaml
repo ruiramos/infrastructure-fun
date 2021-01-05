@@ -1,12 +1,12 @@
 apiversion: v1
 kind: service
 metadata:
-  name: data-storage-service
+  name: redis-service
 spec:
   type: ClusterIP
   selector:
-    app: data-storage
+    app: redis-master
   ports:
     - protocol: tcp
-      port: 8080
-      targetport: 8080
+      port: 6379
+      targetport: 6379

@@ -1,4 +1,4 @@
-# VAULT_ADDR and VAULT_TOKEN read in from Environment variables on the workspace
+# VAULT_ADDR read in from Environment variables on the workspace
 provider "vault" {}
 
 # What roleset are we looking for - read in from Terraform variable on the workspace

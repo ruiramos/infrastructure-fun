@@ -1,18 +1,23 @@
-# Using terraform to provision a GKE cluster
+# Zero to Kubernetes (Hero!)
+
+This is a log of my ventures into "modern" infrastructure management. This is work in progress! My main objective was to get hands on experience with Kubernetes and microservices deployment in a somewhat realistic setting, ie one that could be used for a production project, without the shortcuts normally taken in getting started tutorials. Some things I wanted to achieve were:
+ - provision a Kubernetes cluster running on [GKE](https://cloud.google.com/kubernetes-engine) using [Terraform](https://www.terraform.io/)
+ - proper service account and permission management (done with [Hashicorp Vault](https://www.vaultproject.io/))
+ - build and deploy a few Rust microservices, with CI (used Github Actions) and CD the [GitOps](https://www.gitops.tech/) way (used [ArgoCD](https://argoproj.github.io/argo-cd/)). Manage different versions of the app (ie different environments) using [Kustomize](https://kustomize.io/). I've used [Google Artifact Registy](https://cloud.google.com/artifact-registry) to store the Docker images.
+ - explore some ingress/API Gateway solutions
+ - explore service meshes and what they offer (not done yet)
+ - metrics and alerts (not done yet)
+
+Because of the way this has been done, iteratively and always using this repository, people following will unfortunately only access the final form of the files worked on (unless of course you're digging through git history). Hopefully this is not too big of a limitation in understading whats going on. I've tried to note whenever I had to go back and change previous work significantely.
+
 
 ## Setting up Vault and Terraform
 
-1. Start by configuring Vault locally so we have access key based authentication with the Google Provider
+The main objective for this section is to get Vault running locally so it can authenticate Terraform calls via short-lived access tokens that belong to a service account created and managed by Vault (with the right permissions Terraform needs).
 
-Documented in [this README](./local-vault/README.md).
+We started by configuring Vault locally so we have access key based authentication with the Google Provider, this is documented in [this other README](./local-vault/README.md). We'll then use the Vault roleset we created above as an access token provider for the Google Terraform provider that will provision the Kubernetes cluster. This is done in [main.tf](./main.tf).
 
-
-2. Use the Vault roleset we created above as an access token provider for the Google Terraform provider that we'll use to provision the Kubernetes cluster. This is in [main.tf](./main.tf).
-
-
-3. Next, configure the terraform backend to use Google Cloud Storage (gcs).
-
-Ideally, we want our terraform state to live remotely, so in the future multiple users can update the terraform state and it doesn't depend on a local state. A Google Storage bucket was created for that purpose. The configuration that instructs terraform to use the bucket is on the `terraform { }` block.
+Finally, we configured the terraform backend to use Google Cloud Storage (gcs). We want our terraform state to live remotely, so in the future multiple users can update the terraform state and it doesn't depend on a local state. A Google Storage bucket was created for that purpose. The configuration that instructs terraform to use the bucket is on the `terraform { }` block.
 
 Unfortunately I hit a road block here as I couldn't use the same authentication method - access token from Vault - that I used on the Google provider so I had to create a separate service account (with super limited access - can only access that bucket) and use it here. (`credentials` key).
 I believe this limitation is [documented here](https://github.com/hashicorp/terraform/issues/13022).
@@ -25,48 +30,52 @@ resource.name.startsWith("projects/_/buckets/tf-state-cluster-test")
 
 ## Creating resources on GCP
 
-1. Create the VPC the cluster will use
+1. Create the VPC the cluster will use.
 
 The VPC configuration lives in `vpc.tf`.
 From here on, most steps follow this [HashiCorp tutorial](https://learn.hashicorp.com/tutorials/terraform/gke).
 
+2. Create the GKE cluster.
 
-2. Create the GKE cluster
-
-The cluster configuration lives in `gke.tf`.
+The cluster configuration lives in [gke.tf](./gke.tf).
 It uses a separately configured node pool, which seems like the recommended way to do things, however that does mean some weirdness of specifying 1 node count and removing it immediately (`remove_default_node_pool`) in the cluster config.
-It also specifies an `ip_allocation_policy`, so the provisioned cluster is vpc native, meaning it uses alias IPs to route traffic to pods, instead of static routes like the older routes-based cluster. More info [here](https://cloud.google.com/kubernetes-engine/docs/concepts/alias-ips).
+It also specifies an `ip_allocation_policy`, so the provisioned cluster is vpc native, meaning it uses alias IPs to route traffic to pods, instead of static routes like the older routes-based cluster. [More info about this here.](https://cloud.google.com/kubernetes-engine/docs/concepts/alias-ips)
 
 
-3. To import the cluster credentials to my local `kubectl`, I used the `gcloud` CLI:
+3. Import the cluster credentials to my local `kubectl`. I used the `gcloud` CLI at this point:
 ```
 gcloud auth login
 gcloud config set project project-name
 gcloud container clusters get-credentials $(terraform output kubernetes_cluster_name) --region $(terraform output region)
 ```
 
-Not sure if there was a Vault-y way of doing this.
-
+Not sure if there was a better, Vault-y way of doing this.
 
 4. Deployed [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/), created admin account:
+
+As a first, hello-world deployment, we deployed the Kubernetes dashboard by running:
+
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 kubectl apply -f kubernetes-admin/kubernetes-dashboard-admin.rbac.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 ```
 
-This allows us to generate an authorization token with:
+This creates a `cluster-admin` service account, and we can then generate an authorization token with:
+
 ```
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep service-controller-token | awk '{print $1}')
 ```
 
 The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
+This dashboard looks interesting but Google offers a lot of the same functionality on their UI so I ended up not using it much.
 
-## Deploying our first service
+
+## Deploying the first service
 
 I created a `service/` directory that will hold the code for a bunch of microservices that we'll want to dockerize and deploy to the kubernetes cluster. A few goals I have for now with this repo structure are:
  - Automatically build new Docker images for the services when their source code changes (pushed to Google Artifact Registry, more about this below)
- - (After getting [ArgoCD](https://argoproj.github.io/argo-cd/) configured) Automatically deploy new versions of the services to the cluster when the kubernetes deployment files change
+ - Automatically deploy new versions of the services to the cluster when the kubernetes deployment files change
 
 The first service we're going to deploy is called [data-storage-service](./services/data-storage-service) and it's written in Rust. (more info on the [service's README](./services/data-storage-service/README.md)).
 As stated there, we're using a multistage build so that we keep the final images smaller and we are able to make the most of Docker Layer Caching by caching the compiled dependencies, if they don't change, instead of doing it in every single build.
@@ -76,7 +85,7 @@ As stated there, we're using a multistage build so that we keep the final images
 
 We'll be using [Google Artifact Registry](https://cloud.google.com/artifact-registry) to host our containerized images of the services, it's an evolution of the old Google Container Registry and it supports both Docker images and a bunch of languages packages as well (npm, etc). 
 
-To set up GAR, I created [a new .tf file](./google_artifact_registry.tf) that contains definitions for the repository and the service account we'll use on our CI/CD pipeline to push built images into. At this point, I needed to add a few extra roles to the terraform/Vault service account, so we can create and manage service account, keys and IAM roles. When applying this `google_artifact_registry.tf` for the first time, a private key for the SA will be created and output on the terminal. I used this as a secret on Github so we can authenticate when using Github Actions.
+To set up GAR, I created [a new .tf file](./google_artifact_registry.tf) that contains definitions for the repository and the service account we'll use on our CI pipeline to push built images into. At this point, I needed to add a few extra roles to the terraform/Vault service account, so we can create and manage service account, keys and IAM roles. When applying this `google_artifact_registry.tf` for the first time, a private key for the SA will be created and output on the terminal. I used this as a secret on Github so we can authenticate when using Github Actions.
 
 
 ### Setting up Github Actions
@@ -117,7 +126,7 @@ And then use the service:
 
 ## Setting up ArgoCD for Continuous Deployment
 
-[ArgoCD](https://argoproj.github.io/argo-cd/) is a continuous delivery tool for Kubernetes that syncs your Kubernetes Resource Config files (or Kustomize templates) with the state of the cluster. This is called GitOps!
+[ArgoCD](https://argoproj.github.io/argo-cd/) is a continuous delivery tool for Kubernetes that syncs your Kubernetes Resource Config files (or Kustomize templates) living on a git repository with the state of the cluster. This is called GitOps!
 
 We can install is by running:
 ```
@@ -126,6 +135,10 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 ```
 
 We'll create two manifests for two seperate Applications - the dev and production versions of the `data-storage-service`. They live [on the argocd/ directory](./argocd). Applying this to the cluster will create the 2 apps on ArgoCD, which will then poll our Github repository for changes on the apps manifests/kustomize files.
+
+Normally, as a best practice, you would create a separate repository to hold the manifests than the one that holds application code and point ArgoCD there. For simplicity, I'm only using this one.
+
+At this point, ArgoCD is monitoring this git repository every 3 minutes and diffing the manifests with the state of the cluster. We can do better by...
 
 ### Using a GitHub webhook
 

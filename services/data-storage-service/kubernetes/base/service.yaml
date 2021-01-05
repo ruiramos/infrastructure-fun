@@ -1,5 +1,5 @@
-apiversion: v1
-kind: service
+apiVersion: v1
+kind: Service
 metadata:
   name: data-storage-service
 spec:
@@ -7,6 +7,6 @@ spec:
   selector:
     app: data-storage
   ports:
-    - protocol: tcp
+    - protocol: TCP
       port: 8080
-      targetport: 8080
+      targetPort: 8080

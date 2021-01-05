@@ -1,5 +1,5 @@
-apiversion: v1
-kind: service
+apiVersion: v1
+kind: Service
 metadata:
   name: redis-service
 spec:
@@ -7,6 +7,6 @@ spec:
   selector:
     app: redis-master
   ports:
-    - protocol: tcp
+    - protocol: TCP
       port: 6379
-      targetport: 6379
+      targetPort: 6379

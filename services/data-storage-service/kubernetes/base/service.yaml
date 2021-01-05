@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: data-storage-service
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: data-storage
   ports:

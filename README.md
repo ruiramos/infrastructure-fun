@@ -4,7 +4,7 @@ This is a log of my ventures into "modern" infrastructure management. This is wo
  - provision a Kubernetes cluster running on [GKE](https://cloud.google.com/kubernetes-engine) using [Terraform](https://www.terraform.io/)
  - proper service account and permission management (done with [Hashicorp Vault](https://www.vaultproject.io/))
  - build and deploy a few Rust microservices, with CI (used Github Actions) and CD the [GitOps](https://www.gitops.tech/) way (used [ArgoCD](https://argoproj.github.io/argo-cd/)). Manage different versions of the app (ie different environments) using [Kustomize](https://kustomize.io/). I've used [Google Artifact Registy](https://cloud.google.com/artifact-registry) to store the Docker images.
- - explore some ingress/API Gateway solutions
+ - explore some ingress/API Gateway solutions (used [Ambassador](getambassador.io/))
  - explore service meshes and what they offer (not done yet)
  - metrics and alerts (not done yet)
 
@@ -15,7 +15,7 @@ Because of the way this has been done, iteratively and always using this reposit
 
 The main objective for this section is to get Vault running locally so it can authenticate Terraform calls via short-lived access tokens that belong to a service account created and managed by Vault (with the right permissions Terraform needs).
 
-We started by configuring Vault locally so we have access key based authentication with the Google Provider, this is documented in [this other README](./local-vault/README.md). We'll then use the Vault roleset we created above as an access token provider for the Google Terraform provider that will provision the Kubernetes cluster. This is done in [main.tf](./main.tf).
+We started by configuring Vault locally so we have access key based authentication with the Google Provider, this is documented in [this other README](./local-vault) on the `local-vault` directory. We'll then use the Vault roleset we created above as an access token provider for the Google Terraform provider that will provision the Kubernetes cluster. This is done in [main.tf](./main.tf).
 
 Finally, we configured the terraform backend to use Google Cloud Storage (gcs). We want our terraform state to live remotely, so in the future multiple users can update the terraform state and it doesn't depend on a local state. A Google Storage bucket was created for that purpose. The configuration that instructs terraform to use the bucket is on the `terraform { }` block.
 
@@ -68,7 +68,7 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 
 The Kubernetes Dashboard should be running [here (local link)](http://127.0.0.1:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/), proxied (ie while running `kubectl proxy` on a separate terminal window).
 
-This dashboard looks interesting but Google offers a lot of the same functionality on their UI so I ended up not using it much.
+This dashboard looks cool but Google offers a lot of the same functionality on their UI so I ended up not using it.
 
 
 ## Deploying the first service
@@ -173,7 +173,7 @@ k apply -f kubernetes/basic-ingress.yaml
 
 This is all quite simple stuff, as you can see the [ingress](./kubernetes/basic-ingress.yaml) uses the `ambassador` service, using the static IP address and certificates we've created just now. There's a few limiting things with these managed certificates like the fact that you can't use wildcards, so for now we have to specify each domain/sub-domain we'll be using in the certificate Kubernetes resource definition.
 
-There are a bunch of annoying things to do here related with the `ambassador`'s health checks [documented here](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/#5-configure-ambassador-to-do-http---https-redirection) - we need to point the Ingress backend health check to use the `ambassador-admin` `NodePort`, as the `ambassador` will return a 301 to everything it doesn't think it's HTTPS.
+There are a final annoying thing to do here related with the `ambassador`'s health checks [documented here](https://www.getambassador.io/docs/latest/topics/running/ambassador-with-gke/#5-configure-ambassador-to-do-http---https-redirection) - we need to point the Ingress backend health check to use the `ambassador-admin` `NodePort`, as the `ambassador` will return a 301 to everything it doesn't think it's HTTPS. This was done on the Google Cloud UI directly. :(
 
 ### Route traffic to the deployed service
 

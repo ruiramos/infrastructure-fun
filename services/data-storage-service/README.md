@@ -7,6 +7,7 @@ It listens on the port provided by the `PORT` env var, or 8088.
 The service will be packaged in a Docker container and pushed to Google Registry using a Github Actions workflow.
 It will then run on the GKE cluster created. The kubernetes definition files live in the `kubernetes/` directory.
 
+TODO: Add Redis
 
 ## Dockerfile
 

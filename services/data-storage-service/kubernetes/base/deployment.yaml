@@ -22,6 +22,8 @@ spec:
             value: "8080"
           - name: SERVICE_URL
             value: "https://keep.gke.ruiramos.com/"
+          - name: REDIS_URL
+            value: "dev-redis-service.default.svc.cluster.local"
         ports:
         - containerPort: 8080
         readinessProbe:

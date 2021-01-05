@@ -53,7 +53,7 @@ async fn get_data(mut req: Request<()>) -> tide::Result {
     match value {
         None => Err(tide::Error::from_str(tide::http::StatusCode::Forbidden, "Forbidden")),
         Some(encrypted) => {
-            let decrypted = decrypt_data(encrypted.to_string(), password);
+            let decrypted = decrypt_data(encrypted, password);
             match decrypted {
                 None => Err(tide::Error::from_str(tide::http::StatusCode::Forbidden, "Forbidden")),
                 Some(v) => Ok(v.into())

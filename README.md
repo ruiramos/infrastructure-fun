@@ -56,7 +56,7 @@ Not sure if there was a better, Vault-y way of doing this.
 As a first, hello-world deployment, we deployed the Kubernetes dashboard by running:
 
 ```
-kubectl apply -f kubernetes-admin/kubernetes-dashboard-admin.rbac.yaml
+kubectl apply -f kubernetes/kubernetes-dashboard-admin.rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 ```
 

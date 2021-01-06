@@ -6,3 +6,4 @@ spec:
   domains:
     - gke.ruiramos.com
     - keep.gke.ruiramos.com
+    - prod-keep.gke.ruiramos.com

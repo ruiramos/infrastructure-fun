@@ -42,8 +42,9 @@ async fn store_data(mut req: Request<()>) -> tide::Result {
 }
 
 async fn get_data(mut req: Request<()>) -> tide::Result {
-    let client = redis::Client::open("redis://127.0.0.1/")?;
+    let client = get_redis_client()?;
     let mut con = client.get_connection()?;
+
     let password = req.body_string().await?;
 
     let hash = req.param("id")?;

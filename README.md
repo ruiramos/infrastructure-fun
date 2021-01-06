@@ -5,7 +5,7 @@ This is a log of my ventures into "modern" infrastructure management. This is wo
  - proper service account and permission management (done with [Hashicorp Vault](https://www.vaultproject.io/))
  - build and deploy a few Rust microservices, with CI (used Github Actions) and CD the [GitOps](https://www.gitops.tech/) way (used [ArgoCD](https://argoproj.github.io/argo-cd/)). Manage different versions of the app (ie different environments) using [Kustomize](https://kustomize.io/). 
  - explore some ingress/API Gateway solutions (used [Ambassador](getambassador.io/))
- - explore service meshes and what they offer, try out [dapr](https://dapr.io/) (not done yet) 
+ - explore service meshes and what they offer, try out [dapr](https://dapr.io/) (in progress) 
  - serverless on kubernetes with knative (not done yet)
  - metrics and alerts (not done yet)
 

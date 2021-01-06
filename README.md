@@ -143,7 +143,14 @@ At this point, ArgoCD is monitoring this git repository every 3 minutes and diff
 
 ### Using a GitHub webhook
 
-TODO - this would improve deployment times as ArgoCD would be notified of changes on the manifest files.
+This would improve deployment times as ArgoCD would be notified of changes on the manifest files.
+However at this point we don't have the cluster exposed to the world yet, so we'll do this later. To have configuration changes instantly applied, we can for now port-forward the ArgoCD service and use the CLI, ie:
+```
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+argocd app sunc data-storage-app
+```
+
+We will revisit this later!
 
 
 ## Exposing our cluster to the world
@@ -181,3 +188,10 @@ There are a final annoying thing to do here related with the `ambassador`'s heal
 At this stage, I created the [Host](./services/data-storage-service/kubernetes/overlays/dev/host.yaml) and [Mapping](./services/data-storage-service/kubernetes/overlays/dev/mapping.yaml) configurations in the service Kubernetes dev overlay that tell Ambassador to route traffic to the service based on Host and make HTTP requests redirect to HTTPS.
 
 The service is now available on `https://keep.gke.ruiramos.com`!
+
+
+## Adding Redis
+
+The first version of the `data-storage` service was stateful, using an in-memory HashMap to record keys and values - which is less than ideal in this high-availability world as we have multiple versions of the application running behind the single service, so we would end up with keys in different places. To fix this, we added a Redis backend deployed as a separate pod, and introduced a new environment variable that tells the service where to find Redis. For local development, we can use Docker and expose a port, for our development and production deployments we're using Kubernetes DNS to find the Redis service: it will be accessible in `service-name.namespace.cluster.local`, in this case for eg dev, `dev-redis-service.default.svc.cluster.local`.
+
+Around this time we also created config maps for the pods environment variables, with kustomize helping us applying the right configuration for production and development environments.

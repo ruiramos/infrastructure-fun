@@ -144,7 +144,7 @@ At this point, ArgoCD is monitoring this git repository every 3 minutes and diff
 ### Using a GitHub webhook
 
 This would improve deployment times as ArgoCD would be notified of changes on the manifest files.
-However at this point we don't have the cluster exposed to the world yet, so we'll do this later. To have configuration changes instantly applied, we can for now port-forward the ArgoCD service and use the CLI, ie:
+However at this point we don't have the cluster exposed to the world yet, so we'll do this later. To have configuration changes instantly applied, we can for now port-forward the ArgoCD service and use the CLI to manually trigger a Argo sync, ie:
 ```
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 argocd app sunc data-storage-app

@@ -1,0 +1,10 @@
+apiVersion: getambassador.io/v2
+kind: Host
+metadata:
+  name: data-storage-service-host-production
+spec:
+  hostname: prod-keep.gke.ruiramos.com
+  requestPolicy:
+    insecure:
+      action: Redirect # This enables the HTTP to HTTPS redirect
+

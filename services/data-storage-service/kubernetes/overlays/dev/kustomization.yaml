@@ -7,4 +7,7 @@ images:
 - name: data-storage
   newName: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
   newTag: sha-f60ef4d2
-
+configMapGenerator:
+- name: data-storage-env
+  files:
+  - dev.properties

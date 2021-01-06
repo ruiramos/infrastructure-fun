@@ -1,0 +1,10 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: data-storage-production
+  namespace: production
+spec:
+  prefix: /
+  host: prod-keep.gke.ruiramos.com
+  service: data-storage-service:8080
+

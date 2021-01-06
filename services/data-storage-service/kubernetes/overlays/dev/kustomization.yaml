@@ -6,5 +6,5 @@ namePrefix: dev-
 images:
 - name: data-storage
   newName: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
-  newTag: sha-87864e69
+  newTag: sha-f60ef4d2
 

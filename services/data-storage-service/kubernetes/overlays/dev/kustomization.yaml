@@ -6,7 +6,7 @@ namePrefix: dev-
 images:
 - name: data-storage
   newName: europe-west2-docker.pkg.dev/helical-theater-274414/docker-repository/data-storage
-  newTag: sha-f60eflol
+  newTag: sha-f60eflol2
 configMapGenerator:
 - name: data-storage-env
   files:

@@ -9,5 +9,7 @@ images:
   newTag: sha-f60ef4d2
 configMapGenerator:
 - name: data-storage-env
-  files:
-  - dev.properties
+  literals:
+    - PORT=8080
+    - SERVICE_URL=https://keep.gke.ruiramos.com/
+    - REDIS_URL=dev-redis-service.default.svc.cluster.local

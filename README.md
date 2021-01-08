@@ -6,7 +6,7 @@ This is a log of my ventures into "modern" infrastructure management. This is wo
  - build and deploy a few Rust microservices, with CI (used Github Actions) and CD the [GitOps](https://www.gitops.tech/) way (used [ArgoCD](https://argoproj.github.io/argo-cd/)). Manage different versions of the app (ie different environments) using [Kustomize](https://kustomize.io/). 
  - explore some ingress/API Gateway solutions (used [Ambassador](getambassador.io/))
  - explore service meshes and what they offer, try out [dapr](https://dapr.io/) (in progress) 
- - serverless on kubernetes with knative (not done yet)
+ - serverless on kubernetes with [knative](https://knative.dev/) (not done yet)
  - metrics and alerts (not done yet)
 
 Because of the way this has been done, iteratively and always using this repository, people following will unfortunately only access the final form of the files worked on (unless of course you're digging through git history). Hopefully this is not too big of a limitation in understading whats going on. I've tried to note whenever I had to go back and change previous work significantely.
@@ -195,3 +195,21 @@ The service is now available on `https://keep.gke.ruiramos.com`!
 The first version of the `data-storage` service was stateful, using an in-memory HashMap to record keys and values - which is less than ideal in this high-availability world as we have multiple versions of the application running behind the single service, so we would end up with keys in different places. To fix this, we added a Redis backend deployed as a separate pod, and introduced a new environment variable that tells the service where to find Redis. For local development, we can use Docker and expose a port, for our development and production deployments we're using Kubernetes DNS to find the Redis service: it will be accessible in `service-name.namespace.cluster.local`, in this case for eg dev, `dev-redis-service.default.svc.cluster.local`.
 
 Around this time we also created config maps for the pods environment variables using `.properties` files, with [kustomize helping us](https://kubectl.docs.kubernetes.io/guides/config_management/secrets_configmaps/) applying the right configuration for production and development environments.
+
+
+## Exposing ArgoCD and implementing a Git webhook
+
+Fortunately, ArgoCD docs guide us in making this work very easily:
+
+1. [Ingress configuration](https://argoproj.github.io/argo-cd/operator-manual/ingress/)
+
+After configuring the ingress we've now got access to the ArgoCD web UI.
+There was a slightly messy operation in updating the ArgoCD deployment to include the `--insecure` flag. To do that, I've downloaded, edited then reaplied ArgoCD config. It's now on [./argocd/argocd-deployment.yaml](./argocd/argocd-deployment.yaml).
+
+We've also ran `login` vs the remote host if I ever need to use the CLI locally.
+
+2. [Configuring the Git webhook in Github](https://argoproj.github.io/argo-cd/operator-manual/webhook/)
+
+ArgoCD should now be notified of pushes to the remote repository and run `sync` instantly for us. Again, this would work better if we had 2 repos - separating code and Kubernetes configuration so sync only runs when it really needs to - but it's not a big deal.
+
+## Building an email service using Dapr

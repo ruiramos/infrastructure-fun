@@ -7,3 +7,5 @@ spec:
     - gke.ruiramos.com
     - keep.gke.ruiramos.com
     - prod-keep.gke.ruiramos.com
+    - argocd.gke.ruiramos.com
+    - email.gke.ruiramos.com
